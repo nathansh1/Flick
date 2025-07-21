@@ -1,17 +1,18 @@
-import { Tabs } from 'expo-router'
-import React from 'react'
-import { UiIconSymbol } from '@/components/ui/ui-icon-symbol'
+import { UiIconSymbol } from '@/components/ui/ui-icon-symbol';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import { Tabs } from 'expo-router';
+import React from 'react';
 
 export default function TabLayout() {
   return (
     <Tabs screenOptions={{ headerShown: false }}>
-      {/* The index redirects to the account screen */}
+      {/* The index redirects to the events screen */}
       <Tabs.Screen name="index" options={{ tabBarItemStyle: { display: 'none' } }} />
       <Tabs.Screen
-        name="account"
+        name="_events"
         options={{
-          title: 'Account',
-          tabBarIcon: ({ color }) => <UiIconSymbol size={28} name="wallet.pass.fill" color={color} />,
+          title: 'Events',
+          tabBarIcon: ({ color }) => <AntDesign name="home" size={28} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -19,13 +20,6 @@ export default function TabLayout() {
         options={{
           title: 'Settings',
           tabBarIcon: ({ color }) => <UiIconSymbol size={28} name="gearshape.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="demo"
-        options={{
-          title: 'Demo',
-          tabBarIcon: ({ color }) => <UiIconSymbol size={28} name="ladybug.fill" color={color} />,
         }}
       />
     </Tabs>

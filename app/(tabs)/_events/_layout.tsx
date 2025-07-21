@@ -1,10 +1,18 @@
-import { WalletUiDropdown } from '@/components/solana/wallet-ui-dropdown'
+import { useAppTheme } from '@/components/app-theme'
 import { Stack } from 'expo-router'
 import React from 'react'
 
 export default function Layout() {
+  const { theme } = useAppTheme()
   return (
-    <Stack screenOptions={{ headerTitle: 'Account', headerRight: () => <WalletUiDropdown /> }}>
+    <Stack
+      screenOptions={{
+        headerTitle: 'Events',
+        headerTitleStyle: { fontSize: 50 },
+        headerStyle: { backgroundColor: theme.colors.background },
+        headerShadowVisible: false,
+      }}
+    >
       <Stack.Screen name="index" />
       <Stack.Screen name="airdrop" options={{ headerTitle: 'Airdrop', headerRight: () => null }} />
       <Stack.Screen name="send" options={{ headerTitle: 'Send', headerRight: () => null }} />
