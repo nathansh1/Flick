@@ -14,9 +14,6 @@ export default function Layout() {
       }}
     >
       <Stack.Screen name="index" />
-      <Stack.Screen name="airdrop" options={{ headerTitle: 'Airdrop', headerRight: () => null }} />
-      <Stack.Screen name="send" options={{ headerTitle: 'Send', headerRight: () => null }} />
-      <Stack.Screen name="receive" options={{ headerTitle: 'Receive', headerRight: () => null }} />
     </Stack>
   )
 }
