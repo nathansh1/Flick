@@ -1,10 +1,10 @@
-import { clusterApiUrl } from '@solana/web3.js'
 import { Cluster } from '@/components/cluster/cluster'
 import { ClusterNetwork } from '@/components/cluster/cluster-network'
+import { clusterApiUrl } from '@solana/web3.js'
 
 export class AppConfig {
   static name = 'Flick'
-  static uri = 'https://example.com'
+  static uri = 'https://flick.app'
   static clusters: Cluster[] = [
     {
       id: 'solana:devnet',
