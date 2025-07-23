@@ -4,7 +4,7 @@ import { Image } from 'expo-image'
 import { useLocalSearchParams } from 'expo-router'
 import React from 'react'
 import { ScrollView, View } from 'react-native'
-import { Text } from 'react-native-paper'
+import { IconButton, Text } from 'react-native-paper'
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -46,10 +46,23 @@ export default function EventDetailScreen() {
           </Text>
         </View>
         {/* Event info below header, with horizontal padding */}
-        <View style={{ paddingHorizontal: 16 }}>
-          <Text variant="titleLarge" style={{ marginTop: 32 }}>
-            Event ID: {id}
-          </Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingHorizontal: 16,
+            marginTop: 32,
+          }}
+        >
+          <Text variant="titleLarge">Event ID: {id}</Text>
+          <IconButton
+            icon="plus"
+            mode="contained"
+            containerColor="#4CAF50"
+            onPress={() => console.log('Upload pressed')}
+            style={{ borderRadius: 4, marginLeft: 'auto' }}
+          />
         </View>
         {/* Grid - OUTSIDE padded View */}
         <View

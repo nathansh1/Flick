@@ -45,8 +45,8 @@ export default function EventsScreen() {
       {/* Create Event Button at the bottom */}
       <AppView style={{ marginTop: 'auto', alignItems: 'center' }}>
         <Button
-          mode="outlined"
-          style={{ width: 220 }}
+          mode="contained"
+          style={{ width: 200 }}
           contentStyle={{ height: 48 }}
           labelStyle={{ fontSize: 18 }}
         >

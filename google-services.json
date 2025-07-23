@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "87106471357",
+    "project_id": "flick-dc158",
+    "storage_bucket": "flick-dc158.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:87106471357:android:c8b346ec847f021e35fed4",
+        "android_client_info": {
+          "package_name": "com.anonymous.Flick"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDsCb8Ic_I7N4PVq697IAxHtlAB2YOXlrU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
