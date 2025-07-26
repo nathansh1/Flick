@@ -1,19 +1,77 @@
+import { db } from '@/app/config/firebase'
 import { AppPage } from '@/components/app-page'
 import { useAppTheme } from '@/components/app-theme'
 import { AppView } from '@/components/app-view'
+import { useEvents } from '@/hooks/use-events'
+import { addDoc, collection } from '@react-native-firebase/firestore'
 import { useRouter } from 'expo-router'
 import React from 'react'
-import { Button, TextInput } from 'react-native-paper'
-
-const dummyEvents = [
-  { id: '1', name: 'Event #1' },
-  { id: '2', name: 'Event #2' },
-]
+import { ActivityIndicator, Button, Modal, Portal, Text, TextInput } from 'react-native-paper'
 
 export default function EventsScreen() {
   const router = useRouter()
-  const { spacing } = useAppTheme()
+  const { spacing, theme } = useAppTheme()
   const [eventCode, setEventCode] = React.useState('')
+  const { events, loading, error, refetch } = useEvents()
+  
+  // Create Event Modal State
+  const [createModalVisible, setCreateModalVisible] = React.useState(false)
+  const [creating, setCreating] = React.useState(false)
+  const [eventName, setEventName] = React.useState('')
+  const [eventDescription, setEventDescription] = React.useState('')
+  const [formError, setFormError] = React.useState('')
+
+  const handleCreateEvent = async () => {
+    if (!eventName.trim()) {
+      setFormError('Event name is required')
+      return
+    }
+
+    setCreating(true)
+    setFormError('')
+
+    try {
+      const newEvent = {
+        name: eventName.trim(),
+        description: eventDescription.trim(),
+        members: [] // Start with empty members array
+      }
+
+      const docRef = await addDoc(collection(db, 'events'), newEvent)
+      
+      // Reset form
+      setEventName('')
+      setEventDescription('')
+      setCreateModalVisible(false)
+      
+      // Refresh the events list to include the new event
+      await refetch()
+      
+      // Navigate to the new event
+      router.push({ pathname: '/(tabs)/_events/[id]', params: { id: docRef.id } })
+    } catch (err) {
+      console.error('Error creating event:', err)
+      setFormError('Failed to create event. Please try again.')
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  const openCreateModal = () => {
+    setEventName('')
+    setEventDescription('')
+    setFormError('')
+    setCreateModalVisible(true)
+  }
+
+  const closeCreateModal = () => {
+    if (!creating) {
+      setCreateModalVisible(false)
+      setEventName('')
+      setEventDescription('')
+      setFormError('')
+    }
+  }
 
   return (
     <AppPage>
@@ -28,18 +86,33 @@ export default function EventsScreen() {
         />
         {/* Event Tiles */}
         <AppView style={{ gap: spacing.md }}>
-          {dummyEvents.map((event) => (
-            <Button
-              key={event.id}
-              mode="contained-tonal"
-              style={{ width: '100%', justifyContent: 'flex-start' }}
-              contentStyle={{ height: 56 }}
-              labelStyle={{ fontSize: 22, fontWeight: 'bold', textAlign: 'left', width: '100%', paddingLeft: 24 }}
-              onPress={() => router.push({ pathname: '/(tabs)/_events/[id]', params: { id: event.id } })}
-            >
-              {event.name}
-            </Button>
-          ))}
+          {loading ? (
+            <AppView style={{ alignItems: 'center', padding: spacing.lg }}>
+              <ActivityIndicator size="large" />
+              <Text style={{ marginTop: spacing.sm }}>Loading events...</Text>
+            </AppView>
+          ) : error ? (
+            <AppView style={{ alignItems: 'center', padding: spacing.lg }}>
+              <Text style={{ color: 'red' }}>{error}</Text>
+            </AppView>
+          ) : events.length === 0 ? (
+            <AppView style={{ alignItems: 'center', padding: spacing.lg }}>
+              <Text>No events found</Text>
+            </AppView>
+          ) : (
+            events.map((event) => (
+              <Button
+                key={event.id}
+                mode="contained-tonal"
+                style={{ width: '100%', justifyContent: 'flex-start' }}
+                contentStyle={{ height: 56 }}
+                labelStyle={{ fontSize: 22, fontWeight: 'bold', textAlign: 'left', width: '100%', paddingLeft: 24 }}
+                onPress={() => router.push({ pathname: '/(tabs)/_events/[id]', params: { id: event.id } })}
+              >
+                {event.name}
+              </Button>
+            ))
+          )}
         </AppView>
       </AppView>
       {/* Create Event Button at the bottom */}
@@ -49,10 +122,75 @@ export default function EventsScreen() {
           style={{ width: 200 }}
           contentStyle={{ height: 48 }}
           labelStyle={{ fontSize: 18 }}
+          onPress={openCreateModal}
         >
           Create Event
         </Button>
       </AppView>
+
+      {/* Create Event Modal */}
+      <Portal>
+        <Modal
+          visible={createModalVisible}
+          onDismiss={closeCreateModal}
+          contentContainerStyle={{
+            backgroundColor: theme.colors.surface,
+            padding: spacing.lg,
+            margin: spacing.lg,
+            borderRadius: 8,
+          }}
+        >
+          <Text variant="headlineSmall" style={{ marginBottom: spacing.lg, textAlign: 'center', color: theme.colors.onSurface }}>
+            Create New Event
+          </Text>
+          
+          <TextInput
+            mode="outlined"
+            label="Event Name *"
+            value={eventName}
+            onChangeText={setEventName}
+            style={{ marginBottom: spacing.md }}
+            disabled={creating}
+          />
+          
+          <TextInput
+            mode="outlined"
+            label="Event Description"
+            value={eventDescription}
+            onChangeText={setEventDescription}
+            multiline
+            numberOfLines={3}
+            style={{ marginBottom: spacing.md }}
+            disabled={creating}
+          />
+          
+          {formError ? (
+            <Text style={{ color: 'red', marginBottom: spacing.md, textAlign: 'center' }}>
+              {formError}
+            </Text>
+          ) : null}
+          
+          <AppView style={{ flexDirection: 'row', gap: spacing.sm }}>
+            <Button
+              mode="outlined"
+              onPress={closeCreateModal}
+              style={{ flex: 1 }}
+              disabled={creating}
+            >
+              Cancel
+            </Button>
+            <Button
+              mode="contained"
+              onPress={handleCreateEvent}
+              style={{ flex: 1 }}
+              loading={creating}
+              disabled={creating}
+            >
+              Create
+            </Button>
+          </AppView>
+        </Modal>
+      </Portal>
     </AppPage>
   )
 }

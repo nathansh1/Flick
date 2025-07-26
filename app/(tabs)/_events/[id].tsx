@@ -1,30 +1,39 @@
 import { AppPage } from '@/components/app-page'
 import { useAppTheme } from '@/components/app-theme'
+import { useEvent } from '@/hooks/use-event'
+import { usePosts } from '@/hooks/use-posts'
 import { Image } from 'expo-image'
 import { useLocalSearchParams } from 'expo-router'
 import React from 'react'
 import { ScrollView, View } from 'react-native'
-import { IconButton, Text } from 'react-native-paper'
+import { ActivityIndicator, IconButton, Text } from 'react-native-paper'
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
-  const { theme } = useAppTheme()
+  const { theme, spacing } = useAppTheme()
+  const { event, loading: eventLoading, error: eventError } = useEvent(id)
+  const { posts, loading: postsLoading, error: postsError } = usePosts(id)
 
-  // All 12 images
-  const images = [
-    require('@/assets/images/flick-logo-no-bg.png'),
-    require('@/assets/images/flick-logo.png'),
-    require('@/assets/images/adaptive-icon.png'),
-    require('@/assets/images/favicon.png'),
-    require('@/assets/images/icon.png'),
-    require('@/assets/images/splash-icon.png'),
-    require('@/assets/images/flick-logo-no-bg.png'),
-    require('@/assets/images/flick-logo.png'),
-    require('@/assets/images/adaptive-icon.png'),
-    require('@/assets/images/favicon.png'),
-    require('@/assets/images/icon.png'),
-    require('@/assets/images/splash-icon.png'),
-  ]
+  if (eventLoading) {
+    return (
+      <AppPage style={{ paddingHorizontal: 0 }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" />
+          <Text style={{ marginTop: spacing.sm }}>Loading event...</Text>
+        </View>
+      </AppPage>
+    )
+  }
+
+  if (eventError || !event) {
+    return (
+      <AppPage style={{ paddingHorizontal: 0 }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ color: 'red' }}>{eventError || 'Event not found'}</Text>
+        </View>
+      </AppPage>
+    )
+  }
 
   return (
     <AppPage style={{ paddingHorizontal: 0 }}>
@@ -42,7 +51,10 @@ export default function EventDetailScreen() {
           }}
         >
           <Text variant="headlineLarge" style={{ color: theme.colors.onPrimary, marginTop: 24 }}>
-            Event #{id}
+            {event.name}
+          </Text>
+          <Text variant="bodyLarge" style={{ color: theme.colors.onPrimary, marginTop: 8 }}>
+            {event.description}
           </Text>
         </View>
         {/* Event info below header, with horizontal padding */}
@@ -55,7 +67,7 @@ export default function EventDetailScreen() {
             marginTop: 32,
           }}
         >
-          <Text variant="titleLarge">Event ID: {id}</Text>
+          <Text variant="titleLarge">Members: {event.members.length}</Text>
           <IconButton
             icon="plus"
             mode="contained"
@@ -74,30 +86,45 @@ export default function EventDetailScreen() {
             backgroundColor: theme.colors.background,
           }}
         >
-          {images.map((img, idx) => {
-            const isLastCol = (idx + 1) % 3 === 0
-            const isLastRow = idx >= 9
-            return (
-              <View
-                key={idx}
-                style={{
-                  width: '33.3333%',
-                  aspectRatio: 3 / 4,
-                  borderRightWidth: isLastCol ? 0 : 1,
-                  borderBottomWidth: isLastRow ? 0 : 1,
-                  borderColor: theme.colors.background,
-                  backgroundColor: '#111',
-                }}
-              >
-                {img && (
-                  <Image
-                    source={img}
-                    style={{ width: '100%', height: '100%', resizeMode: 'cover' }}
-                  />
-                )}
-              </View>
-            )
-          })}
+          {postsLoading ? (
+            <View style={{ width: '100%', padding: spacing.lg, alignItems: 'center' }}>
+              <ActivityIndicator size="large" />
+              <Text style={{ marginTop: spacing.sm }}>Loading posts...</Text>
+            </View>
+          ) : postsError ? (
+            <View style={{ width: '100%', padding: spacing.lg, alignItems: 'center' }}>
+              <Text style={{ color: 'red' }}>{postsError}</Text>
+            </View>
+          ) : posts.length === 0 ? (
+            <View style={{ width: '100%', padding: spacing.lg, alignItems: 'center' }}>
+              <Text>No posts yet</Text>
+            </View>
+          ) : (
+            posts.map((post, idx) => {
+              const isLastCol = (idx + 1) % 3 === 0
+              const isLastRow = idx >= posts.length - 3
+              return (
+                <View
+                  key={post.id}
+                  style={{
+                    width: '33.3333%',
+                    aspectRatio: 3 / 4,
+                    borderRightWidth: isLastCol ? 0 : 1,
+                    borderBottomWidth: isLastRow ? 0 : 1,
+                    borderColor: theme.colors.background,
+                    backgroundColor: '#111',
+                  }}
+                >
+                  {post.image && (
+                    <Image
+                      source={{ uri: post.image }}
+                      style={{ width: '100%', height: '100%', resizeMode: 'cover' }}
+                    />
+                  )}
+                </View>
+              )
+            })
+          )}
         </View>
       </ScrollView>
     </AppPage>
