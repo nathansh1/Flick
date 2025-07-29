@@ -13,37 +13,37 @@ export function usePosts(eventId: string) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const fetchPosts = async () => {
     if (!eventId) {
       setPosts([])
       setLoading(false)
       return
     }
 
-    const fetchPosts = async () => {
-      try {
-        setLoading(true)
-        const postsCollection = collection(db, 'events', eventId, 'post')
-        const postsSnapshot = await getDocs(postsCollection)
-        
-        const postsData: Post[] = postsSnapshot.docs.map((doc: any) => ({
-          id: doc.id,
-          image: doc.data().img || '',
-          caption: doc.data().caption || ''
-        }))
-        
-        setPosts(postsData)
-        setError(null)
-      } catch (err) {
-        console.error('Error fetching posts:', err)
-        setError('Failed to load posts')
-      } finally {
-        setLoading(false)
-      }
+    try {
+      setLoading(true)
+      const postsCollection = collection(db, 'events', eventId, 'post')
+      const postsSnapshot = await getDocs(postsCollection)
+      
+      const postsData: Post[] = postsSnapshot.docs.map((doc: any) => ({
+        id: doc.id,
+        image: doc.data().img || '',
+        caption: doc.data().caption || ''
+      }))
+      
+      setPosts(postsData)
+      setError(null)
+    } catch (err) {
+      console.error('Error fetching posts:', err)
+      setError('Failed to load posts')
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchPosts()
   }, [eventId])
 
-  return { posts, loading, error }
+  return { posts, loading, error, refetch: fetchPosts }
 } 

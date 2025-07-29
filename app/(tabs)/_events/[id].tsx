@@ -1,18 +1,101 @@
+import { db, storageRef } from '@/app/config/firebase'
 import { AppPage } from '@/components/app-page'
 import { useAppTheme } from '@/components/app-theme'
 import { useEvent } from '@/hooks/use-event'
 import { usePosts } from '@/hooks/use-posts'
+import { addDoc, collection } from '@react-native-firebase/firestore'
+import { getDownloadURL, ref, uploadBytes } from '@react-native-firebase/storage'
 import { Image } from 'expo-image'
+import * as ImagePicker from 'expo-image-picker'
 import { useLocalSearchParams } from 'expo-router'
 import React from 'react'
 import { ScrollView, View } from 'react-native'
-import { ActivityIndicator, IconButton, Text } from 'react-native-paper'
+import { ActivityIndicator, Button, IconButton, Modal, Portal, Text, TextInput } from 'react-native-paper'
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const { theme, spacing } = useAppTheme()
   const { event, loading: eventLoading, error: eventError } = useEvent(id)
-  const { posts, loading: postsLoading, error: postsError } = usePosts(id)
+  const { posts, loading: postsLoading, error: postsError, refetch } = usePosts(id)
+
+  // Upload Modal State
+  const [uploadModalVisible, setUploadModalVisible] = React.useState(false)
+  const [uploading, setUploading] = React.useState(false)
+  const [selectedImage, setSelectedImage] = React.useState<string | null>(null)
+  const [caption, setCaption] = React.useState('')
+  const [uploadError, setUploadError] = React.useState('')
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [3, 4],
+      quality: 0.8,
+    })
+
+    if (!result.canceled && result.assets[0]) {
+      setSelectedImage(result.assets[0].uri)
+    }
+  }
+
+  const handleUpload = async () => {
+    if (!selectedImage) {
+      setUploadError('Please select an image')
+      return
+    }
+
+    setUploading(true)
+    setUploadError('')
+
+    try {
+      // Upload image to Firebase Storage
+      const response = await fetch(selectedImage)
+      const blob = await response.blob()
+      
+      const imageRef = ref(storageRef, `posts/${id}/${Date.now()}.jpg`)
+      await uploadBytes(imageRef, blob)
+      
+      // Get download URL
+      const downloadURL = await getDownloadURL(imageRef)
+      
+      // Add post to Firestore
+      const newPost = {
+        image: downloadURL,
+        caption: caption.trim()
+      }
+
+      await addDoc(collection(db, 'events', id, 'posts'), newPost)
+      
+      // Reset form
+      setSelectedImage(null)
+      setCaption('')
+      setUploadModalVisible(false)
+      
+      // Refresh posts list
+      await refetch()
+    } catch (err) {
+      console.error('Error uploading post:', err)
+      setUploadError('Failed to upload post. Please try again.')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const openUploadModal = () => {
+    setSelectedImage(null)
+    setCaption('')
+    setUploadError('')
+    setUploadModalVisible(true)
+  }
+
+  const closeUploadModal = () => {
+    if (!uploading) {
+      setUploadModalVisible(false)
+      setSelectedImage(null)
+      setCaption('')
+      setUploadError('')
+    }
+  }
 
   if (eventLoading) {
     return (
@@ -72,7 +155,7 @@ export default function EventDetailScreen() {
             icon="plus"
             mode="contained"
             containerColor="#4CAF50"
-            onPress={() => console.log('Upload pressed')}
+            onPress={openUploadModal}
             style={{ borderRadius: 4, marginLeft: 'auto' }}
           />
         </View>
@@ -127,6 +210,84 @@ export default function EventDetailScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* Upload Post Modal */}
+      <Portal>
+        <Modal
+          visible={uploadModalVisible}
+          onDismiss={closeUploadModal}
+          contentContainerStyle={{
+            backgroundColor: theme.colors.surface,
+            padding: spacing.lg,
+            margin: spacing.lg,
+            borderRadius: 8,
+          }}
+        >
+          <Text variant="headlineSmall" style={{ marginBottom: spacing.lg, textAlign: 'center', color: theme.colors.onSurface }}>
+            Upload Post
+          </Text>
+          
+          {/* Image Selection */}
+          <Button
+            mode="outlined"
+            onPress={pickImage}
+            style={{ marginBottom: spacing.md }}
+            disabled={uploading}
+            icon="camera"
+          >
+            {selectedImage ? 'Change Image' : 'Select Image'}
+          </Button>
+          
+          {/* Image Preview */}
+          {selectedImage && (
+            <View style={{ marginBottom: spacing.md, alignItems: 'center' }}>
+              <Image
+                source={{ uri: selectedImage }}
+                style={{ width: 200, height: 267, borderRadius: 8 }}
+                contentFit="cover"
+              />
+            </View>
+          )}
+          
+          {/* Caption Input */}
+          <TextInput
+            mode="outlined"
+            label="Caption"
+            value={caption}
+            onChangeText={setCaption}
+            multiline
+            numberOfLines={3}
+            style={{ marginBottom: spacing.md }}
+            disabled={uploading}
+          />
+          
+          {uploadError ? (
+            <Text style={{ color: 'red', marginBottom: spacing.md, textAlign: 'center' }}>
+              {uploadError}
+            </Text>
+          ) : null}
+          
+          <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+            <Button
+              mode="outlined"
+              onPress={closeUploadModal}
+              style={{ flex: 1 }}
+              disabled={uploading}
+            >
+              Cancel
+            </Button>
+            <Button
+              mode="contained"
+              onPress={handleUpload}
+              style={{ flex: 1 }}
+              loading={uploading}
+              disabled={uploading || !selectedImage}
+            >
+              Upload
+            </Button>
+          </View>
+        </Modal>
+      </Portal>
     </AppPage>
   )
 }
