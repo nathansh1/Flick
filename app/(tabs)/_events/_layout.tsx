@@ -15,6 +15,7 @@ export default function Layout() {
     >
       <Stack.Screen name="index" />
       <Stack.Screen name="[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="[id]/[postId]" options={{ headerShown: false }} />
     </Stack>
   )
 }

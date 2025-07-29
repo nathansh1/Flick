@@ -8,18 +8,19 @@ import { addDoc, collection } from '@react-native-firebase/firestore'
 import axios from 'axios'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
-import { useLocalSearchParams } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import React from 'react'
-import { ScrollView, View } from 'react-native'
+import { ScrollView, TouchableOpacity, View } from 'react-native'
 import { ActivityIndicator, Button, IconButton, Modal, Portal, Text, TextInput } from 'react-native-paper'
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
+  const router = useRouter()
   const { theme, spacing } = useAppTheme()
   const { event, loading: eventLoading, error: eventError } = useEvent(id)
   const { posts, loading: postsLoading, error: postsError, refetch } = usePosts(id)
 
-  // Upload Modal State
+
   const [uploadModalVisible, setUploadModalVisible] = React.useState(false)
   const [uploading, setUploading] = React.useState(false)
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null)
@@ -210,7 +211,7 @@ export default function EventDetailScreen() {
               const isLastCol = (idx + 1) % 3 === 0
               const isLastRow = idx >= posts.length - 3
               return (
-                <View
+                <TouchableOpacity
                   key={post.id}
                   style={{
                     width: '33.3333%',
@@ -220,6 +221,11 @@ export default function EventDetailScreen() {
                     borderColor: theme.colors.background,
                     backgroundColor: '#111',
                   }}
+                  onPress={() => router.push({
+                    pathname: '/(tabs)/_events/[id]/[postId]',
+                    params: { id, postId: post.id }
+                  })}
+                  activeOpacity={0.7}
                 >
                   {post.image && (
                     <Image
@@ -227,7 +233,7 @@ export default function EventDetailScreen() {
                       style={{ width: '100%', height: '100%', resizeMode: 'cover' }}
                     />
                   )}
-                </View>
+                </TouchableOpacity>
               )
             })
           )}
