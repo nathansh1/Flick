@@ -1,10 +1,11 @@
-import { db, storageRef } from '@/app/config/firebase'
+import { db } from '@/app/config/firebase'
+import { IMGBB_API_KEY, IMGBB_UPLOAD_URL } from '@/app/config/imgbb'
 import { AppPage } from '@/components/app-page'
 import { useAppTheme } from '@/components/app-theme'
 import { useEvent } from '@/hooks/use-event'
 import { usePosts } from '@/hooks/use-posts'
 import { addDoc, collection } from '@react-native-firebase/firestore'
-import { getDownloadURL, ref, uploadBytes } from '@react-native-firebase/storage'
+import axios from 'axios'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { useLocalSearchParams } from 'expo-router'
@@ -48,31 +49,54 @@ export default function EventDetailScreen() {
     setUploadError('')
 
     try {
-      // Upload image to Firebase Storage
+      // Convert image to base64
       const response = await fetch(selectedImage)
       const blob = await response.blob()
       
-      const imageRef = ref(storageRef, `posts/${id}/${Date.now()}.jpg`)
-      await uploadBytes(imageRef, blob)
+      // Convert blob to base64
+      const reader = new FileReader()
+      const base64Promise = new Promise((resolve, reject) => {
+        reader.onload = () => resolve(reader.result)
+        reader.onerror = reject
+      })
+      reader.readAsDataURL(blob)
+      const base64Data = await base64Promise as string
       
-      // Get download URL
-      const downloadURL = await getDownloadURL(imageRef)
+      // Remove the data URL prefix to get just the base64 string
+      const base64String = base64Data.split(',')[1]
       
-      // Add post to Firestore
-      const newPost = {
-        image: downloadURL,
-        caption: caption.trim()
-      }
+      // Upload to imgbb
+      const formData = new FormData()
+      formData.append('image', base64String)
+      formData.append('key', IMGBB_API_KEY || '')
+      
+      const imgbbResponse = await axios.post(IMGBB_UPLOAD_URL, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      
+      if (imgbbResponse.data.success) {
+        const imageUrl = imgbbResponse.data.data.url
+        
+        // Add post to Firestore
+        const newPost = {
+          image: imageUrl,
+          caption: caption.trim()
+        }
 
-      await addDoc(collection(db, 'events', id, 'posts'), newPost)
-      
-      // Reset form
-      setSelectedImage(null)
-      setCaption('')
-      setUploadModalVisible(false)
-      
-      // Refresh posts list
-      await refetch()
+        await addDoc(collection(db, 'events', id, 'posts'), newPost)
+        
+        // Reset form
+        setSelectedImage(null)
+        setCaption('')
+        setUploadModalVisible(false)
+        
+        // Refresh posts list
+        await refetch()
+      } else {
+        throw new Error('Failed to upload to database')
+      }
     } catch (err) {
       console.error('Error uploading post:', err)
       setUploadError('Failed to upload post. Please try again.')
@@ -150,7 +174,6 @@ export default function EventDetailScreen() {
             marginTop: 32,
           }}
         >
-          <Text variant="titleLarge">Members: {event.members.length}</Text>
           <IconButton
             icon="plus"
             mode="contained"
