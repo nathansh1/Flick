@@ -7,6 +7,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import React from 'react'
 import { View } from 'react-native'
 import { ActivityIndicator, IconButton, Text } from 'react-native-paper'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function PostDetailScreen() {
   const params = useLocalSearchParams()
@@ -68,13 +69,15 @@ export default function PostDetailScreen() {
   }
 
   return (
-    <AppPage style={{ paddingHorizontal: 0 }}>
-      <View style={{ flex: 1 }}>
-        {/* Header */}
-        <View
+    <View style={{ flex: 1, backgroundColor: '#000' }}>
+      {/* Header - Fixed at top */}
+      <View
+        style={{
+          backgroundColor: 'rgba(0,0,0,0.5)',
+        }}
+      >
+        <SafeAreaView
           style={{
-            backgroundColor: theme.colors.primary,
-            paddingVertical: 16,
             paddingHorizontal: 16,
             flexDirection: 'row',
             alignItems: 'center',
@@ -83,86 +86,86 @@ export default function PostDetailScreen() {
         >
           <IconButton
             icon="arrow-left"
-            iconColor={theme.colors.onPrimary}
+            iconColor="white"
             onPress={() => router.back()}
           />
-          <Text style={{ color: theme.colors.onPrimary, flex: 1, textAlign: 'center' }}>
+          <Text style={{ color: 'white', flex: 1, textAlign: 'center' }}>
             {event.name || 'Event'}
           </Text>
           <View style={{ width: 48 }} />
-        </View>
+        </SafeAreaView>
+      </View>
 
-        {/* Image Container - Fixed height instead of flex */}
-        <View style={{ height: 400, backgroundColor: '#000', marginTop: 100 }}>
-          {post.image ? (
-            <Image
-              source={{ uri: post.image }}
-              style={{ width: '100%', height: '100%' }}
-              contentFit="contain"
-              transition={200}
-            />
-          ) : (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <Text style={{ color: 'white' }}>No image available</Text>
-            </View>
-          )}
-        </View>
-
-        {/* Caption */}
-        {post.caption && (
-          <View style={{ padding: spacing.md, backgroundColor: theme.colors.surface }}>
-            <Text>{post.caption}</Text>
+      {/* Image Container - Below header */}
+      <View style={{ flex: 1 }}>
+        {post.image ? (
+          <Image
+            source={{ uri: post.image }}
+            style={{ width: '100%', height: '100%' }}
+            contentFit="contain"
+            transition={200}
+          />
+        ) : (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ color: 'white' }}>No image available</Text>
           </View>
         )}
+      </View>
 
-        {/* Action Buttons */}
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-around',
-            alignItems: 'center',
-            paddingVertical: spacing.lg,
-            paddingHorizontal: spacing.md,
-            backgroundColor: theme.colors.surface,
-            borderTopWidth: 1,
-            borderTopColor: theme.colors.outline,
-            minHeight: 80,
-          }}
-        >
-          {/* Like Button */}
-          <View style={{ alignItems: 'center' }}>
-            <IconButton
-              icon="heart-outline"
-              size={28}
-              onPress={() => {
-                console.log('Like pressed')
-              }}
-            />
-          </View>
+      {/* Caption */}
+      {post.caption && (
+        <View style={{ padding: spacing.md, backgroundColor: theme.colors.surface }}>
+          <Text>{post.caption}</Text>
+        </View>
+      )}
 
-          {/* Download Button */}
-          <View style={{ alignItems: 'center' }}>
-            <IconButton
-              icon="download"
-              size={28}
-              onPress={() => {
-                console.log('Download pressed')
-              }}
-            />
-          </View>
+      {/* Action Buttons */}
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-around',
+          alignItems: 'center',
+          paddingVertical: spacing.lg,
+          paddingHorizontal: spacing.md,
+          backgroundColor: theme.colors.surface,
+          borderTopWidth: 1,
+          borderTopColor: theme.colors.outline,
+          minHeight: 80,
+        }}
+      >
+        {/* Like Button */}
+        <View style={{ alignItems: 'center' }}>
+          <IconButton
+            icon="heart-outline"
+            size={28}
+            onPress={() => {
+              console.log('Like pressed')
+            }}
+          />
+        </View>
 
-          {/* Tip Button */}
-          <View style={{ alignItems: 'center' }}>
-            <IconButton
-              icon="currency-usd"
-              size={28}
-              onPress={() => {
-                console.log('Tip pressed')
-              }}
-            />
-          </View>
+        {/* Download Button */}
+        <View style={{ alignItems: 'center' }}>
+          <IconButton
+            icon="download"
+            size={28}
+            onPress={() => {
+              console.log('Download pressed')
+            }}
+          />
+        </View>
+
+        {/* Tip Button */}
+        <View style={{ alignItems: 'center' }}>
+          <IconButton
+            icon="currency-usd"
+            size={28}
+            onPress={() => {
+              console.log('Tip pressed')
+            }}
+          />
         </View>
       </View>
-    </AppPage>
+    </View>
   )
 } 
