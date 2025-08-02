@@ -1,11 +1,14 @@
 import { AppPage } from '@/components/app-page'
 import { useAppTheme } from '@/components/app-theme'
+import { SolanaIcon } from '@/components/ui/solana-icon'
 import { useEvent } from '@/hooks/use-event'
 import { usePosts } from '@/hooks/use-posts'
-import { Image } from 'expo-image'
+import * as FileSystem from 'expo-file-system'
+import * as MediaLibrary from 'expo-media-library'
+import { usePermissions } from 'expo-media-library'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import React from 'react'
-import { View } from 'react-native'
+import React, { useState } from 'react'
+import { Alert, Image, View } from 'react-native'
 import { ActivityIndicator, IconButton, Text } from 'react-native-paper'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
@@ -13,6 +16,10 @@ export default function PostDetailScreen() {
   const params = useLocalSearchParams()
   const router = useRouter()
   const { theme, spacing } = useAppTheme()
+  const [isLiked, setIsLiked] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false)
+  const [permissionResponse, requestPermission] = usePermissions()
+  console.log('Media Library:', usePermissions)
   
   const id = params?.id as string
   const postId = params?.postId as string
@@ -68,14 +75,39 @@ export default function PostDetailScreen() {
     )
   }
 
+  const handleDownload = async () => {
+    if (!post.image) {
+      Alert.alert('No image available to download')
+      return
+    }
+    try {
+      setIsDownloading(true)
+
+      if (!permissionResponse || permissionResponse.status !== 'granted') {
+        const response = await requestPermission()
+        if (response.status !== 'granted') {
+          Alert.alert('Permission Denied', 'Storage permission is required to save the image')
+          return
+        }
+      }
+
+      const fileUri = `${FileSystem.cacheDirectory}event_snap_${postId}.jpg`
+      const { uri } = await FileSystem.downloadAsync(post.image, fileUri)
+
+      await MediaLibrary.createAssetAsync(uri)
+      
+      Alert.alert('Success', 'Image saved!')
+    } catch (error) {
+      console.error('Download error:', error)
+      Alert.alert('Error', 'Failed to download image.')
+    } finally {
+      setIsDownloading(false)
+    }
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: '#000' }}>
-      {/* Header - Fixed at top */}
-      <View
-        style={{
-          backgroundColor: 'rgba(0,0,0,0.5)',
-        }}
-      >
+      <View style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
         <SafeAreaView
           style={{
             paddingHorizontal: 16,
@@ -96,14 +128,13 @@ export default function PostDetailScreen() {
         </SafeAreaView>
       </View>
 
-      {/* Image Container - Below header */}
+      {/* Image Container */}
       <View style={{ flex: 1 }}>
         {post.image ? (
           <Image
             source={{ uri: post.image }}
             style={{ width: '100%', height: '100%' }}
-            contentFit="contain"
-            transition={200}
+            resizeMode="contain"
           />
         ) : (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -136,9 +167,11 @@ export default function PostDetailScreen() {
         {/* Like Button */}
         <View style={{ alignItems: 'center' }}>
           <IconButton
-            icon="heart-outline"
+            icon={isLiked ? 'heart' : 'heart-outline'}
+            iconColor={isLiked ? '#ff4757' : undefined}
             size={28}
             onPress={() => {
+              setIsLiked(!isLiked)
               console.log('Like pressed')
             }}
           />
@@ -147,18 +180,17 @@ export default function PostDetailScreen() {
         {/* Download Button */}
         <View style={{ alignItems: 'center' }}>
           <IconButton
-            icon="download"
+            icon={isDownloading ? 'loading' : 'download'}
             size={28}
-            onPress={() => {
-              console.log('Download pressed')
-            }}
+            disabled={isDownloading}
+            onPress={handleDownload}
           />
         </View>
 
         {/* Tip Button */}
         <View style={{ alignItems: 'center' }}>
           <IconButton
-            icon="currency-usd"
+            icon={() => <SolanaIcon size={28} />}
             size={28}
             onPress={() => {
               console.log('Tip pressed')
