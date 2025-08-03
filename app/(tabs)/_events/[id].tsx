@@ -13,6 +13,52 @@ import React from 'react'
 import { ScrollView, TouchableOpacity, View } from 'react-native'
 import { ActivityIndicator, Button, IconButton, Modal, Portal, Text, TextInput } from 'react-native-paper'
 
+// Collapsible description component
+const CollapsibleDescription = ({ description, maxLines = 1 }: { description: string; maxLines?: number }) => {
+  const [expanded, setExpanded] = React.useState(false)
+  const [textLayout, setTextLayout] = React.useState<{ lines: number } | null>(null)
+  const { theme } = useAppTheme()
+
+  const shouldTruncate = textLayout && textLayout.lines > maxLines
+
+  return (
+    <View>
+      <Text
+        variant="bodyLarge"
+        style={{ 
+          color: theme.colors.onPrimary, 
+          marginTop: 8,
+          lineHeight: 20,
+        }}
+        numberOfLines={expanded ? undefined : maxLines}
+        onTextLayout={(event) => {
+          if (!textLayout) {
+            setTextLayout({ lines: event.nativeEvent.lines.length })
+          }
+        }}
+      >
+        {description}
+      </Text>
+      {shouldTruncate && (
+        <TouchableOpacity
+          onPress={() => setExpanded(!expanded)}
+          style={{ marginTop: 4 }}
+        >
+          <Text
+            style={{
+              color: theme.colors.onPrimary,
+              textDecorationLine: 'underline',
+              fontSize: 14,
+            }}
+          >
+            {expanded ? 'Show less' : 'Show more'}
+          </Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  )
+}
+
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
@@ -161,9 +207,7 @@ export default function EventDetailScreen() {
           <Text variant="headlineLarge" style={{ color: theme.colors.onPrimary, marginTop: 24 }}>
             {event.name}
           </Text>
-          <Text variant="bodyLarge" style={{ color: theme.colors.onPrimary, marginTop: 8 }}>
-            {event.description}
-          </Text>
+          <CollapsibleDescription description={event.description} />
         </View>
         {/* Event info below header, with horizontal padding */}
         <View
