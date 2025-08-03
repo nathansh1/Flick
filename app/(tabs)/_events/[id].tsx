@@ -10,7 +10,7 @@ import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import React from 'react'
-import { ScrollView, TouchableOpacity, View } from 'react-native'
+import { Alert, ScrollView, TouchableOpacity, View } from 'react-native'
 import { ActivityIndicator, Button, IconButton, Modal, Portal, Text, TextInput } from 'react-native-paper'
 
 // Collapsible description component
@@ -224,7 +224,23 @@ export default function EventDetailScreen() {
             mode="contained"
             containerColor="#4CAF50"
             onPress={openUploadModal}
-            style={{ borderRadius: 4, marginLeft: 'auto' }}
+            style={{ borderRadius: 4 }}
+          />
+          
+          {/* Event Code Button */}
+          <IconButton
+            icon="qrcode"
+            mode="contained"
+            containerColor={theme.colors.primary}
+            iconColor={theme.colors.onPrimary}
+            onPress={() => {
+              Alert.alert(
+                'Event Code (case sensitive)',
+                `${id?.substring(0, 4)}`,
+                [{ text: 'OK' }]
+              )
+            }}
+            style={{ borderRadius: 4 }}
           />
         </View>
         {/* Grid - OUTSIDE padded View */}
