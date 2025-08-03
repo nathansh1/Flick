@@ -1,5 +1,5 @@
 import { db } from '@/app/config/firebase'
-import { collection, getDocs } from '@react-native-firebase/firestore'
+import { arrayUnion, collection, doc, getDocs, updateDoc } from '@react-native-firebase/firestore'
 import { useEffect, useState } from 'react'
 
 export interface Event {
@@ -61,4 +61,63 @@ export function useEvents(userPublicKey?: string) {
   }, [userPublicKey])
 
   return { events, loading, error, refetch: fetchEvents }
+}
+
+export function useEventSearch() {
+  const [searchResults, setSearchResults] = useState<Event[]>([])
+  const [searching, setSearching] = useState(false)
+  const [searchError, setSearchError] = useState<string | null>(null)
+
+  const searchEventsByIdPrefix = async (prefix: string) => {
+    if (!prefix || prefix.length !== 4) {
+      setSearchResults([])
+      setSearchError(null)
+      return
+    }
+
+    try {
+      setSearching(true)
+      setSearchError(null)
+      
+      const eventsCollection = collection(db, 'events')
+      const eventsSnapshot = await getDocs(eventsCollection)
+      
+      const matchingEvents = eventsSnapshot.docs
+        .map((doc: any) => ({
+          id: doc.id,
+          name: doc.data().name || '',
+          description: doc.data().description || '',
+          members: doc.data().members || []
+        }))
+        .filter((event: Event) => event.id.startsWith(prefix))
+      
+      setSearchResults(matchingEvents)
+    } catch (err) {
+      console.error('Error searching events:', err)
+      setSearchError('Failed to search events')
+    } finally {
+      setSearching(false)
+    }
+  }
+
+  const joinEvent = async (eventId: string, userPublicKey: string): Promise<boolean> => {
+    try {
+      const eventRef = doc(db, 'events', eventId)
+      await updateDoc(eventRef, {
+        members: arrayUnion(userPublicKey)
+      })
+      return true
+    } catch (err) {
+      console.error('Error joining event:', err)
+      return false
+    }
+  }
+
+  return { 
+    searchResults, 
+    searching, 
+    searchError, 
+    searchEventsByIdPrefix, 
+    joinEvent 
+  }
 } 

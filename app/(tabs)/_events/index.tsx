@@ -3,7 +3,7 @@ import { AppPage } from '@/components/app-page'
 import { useAppTheme } from '@/components/app-theme'
 import { AppView } from '@/components/app-view'
 import { useAuthorization } from '@/components/solana/use-authorization'
-import { useEvents } from '@/hooks/use-events'
+import { useEvents, useEventSearch } from '@/hooks/use-events'
 import { addDoc, collection } from '@react-native-firebase/firestore'
 import { useRouter } from 'expo-router'
 import React from 'react'
@@ -15,16 +15,49 @@ export default function EventsScreen() {
   const { selectedAccount } = useAuthorization()
   const [eventCode, setEventCode] = React.useState('')
   
-  // Get user's public key as string for filtering
   const userPublicKey = selectedAccount?.publicKey.toString()
   const { events, loading, error, refetch } = useEvents(userPublicKey)
+  const { searchResults, searching, searchError, searchEventsByIdPrefix, joinEvent } = useEventSearch()
   
-  // Create Event Modal State
   const [createModalVisible, setCreateModalVisible] = React.useState(false)
   const [creating, setCreating] = React.useState(false)
   const [eventName, setEventName] = React.useState('')
   const [eventDescription, setEventDescription] = React.useState('')
   const [formError, setFormError] = React.useState('')
+  const [joiningEvent, setJoiningEvent] = React.useState<string | null>(null)
+
+  // Search for events when eventCode changes
+  React.useEffect(() => {
+    if (eventCode.length >= 4) {
+      searchEventsByIdPrefix(eventCode)
+    }
+  }, [eventCode])
+
+  const handleJoinEvent = async (eventId: string) => {
+    if (!userPublicKey) {
+      setFormError('Please connect your wallet to join events')
+      return
+    }
+
+    setJoiningEvent(eventId)
+    setFormError('')
+
+    try {
+      const success = await joinEvent(eventId, userPublicKey)
+      if (success) {
+        setEventCode('')
+        await refetch()
+        setFormError('')
+      } else {
+        setFormError('Failed to join event. Please try again.')
+      }
+    } catch (err) {
+      console.error('Error joining event:', err)
+      setFormError('Failed to join event. Please try again.')
+    } finally {
+      setJoiningEvent(null)
+    }
+  }
 
   const handleCreateEvent = async () => {
     if (!eventName.trim()) {
@@ -44,15 +77,12 @@ export default function EventsScreen() {
 
       const docRef = await addDoc(collection(db, 'events'), newEvent)
       
-      // Reset form
       setEventName('')
       setEventDescription('')
       setCreateModalVisible(false)
       
-      // Refresh the events list to include the new event
       await refetch()
       
-      // Navigate to the new event
       router.push({ pathname: '/(tabs)/_events/[id]', params: { id: docRef.id } })
     } catch (err) {
       console.error('Error creating event:', err)
@@ -89,6 +119,84 @@ export default function EventsScreen() {
           onChangeText={setEventCode}
           style={{ marginBottom: spacing.lg }}
         />
+        
+        {/* Search Results */}
+        {eventCode.length >= 4 && (
+          <AppView style={{ gap: spacing.md, marginBottom: spacing.lg }}>
+            <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
+              Search Results
+            </Text>
+            
+            {searching ? (
+              <AppView style={{ alignItems: 'center', padding: spacing.md }}>
+                <ActivityIndicator size="small" />
+                <Text style={{ marginTop: spacing.sm }}>Searching...</Text>
+              </AppView>
+            ) : searchError ? (
+              <Text style={{ color: 'red', textAlign: 'center' }}>{searchError}</Text>
+            ) : searchResults.length === 0 ? (
+              <Text style={{ textAlign: 'center', opacity: 0.7 }}>
+                No events found with that code
+              </Text>
+            ) : (
+              searchResults.map((event) => {
+                const isAlreadyMember = userPublicKey && event.members.some(member => 
+                  member.toLowerCase() === userPublicKey.toLowerCase()
+                )
+                
+                return (
+                  <AppView 
+                    key={event.id} 
+                    style={{ 
+                      padding: spacing.md, 
+                      backgroundColor: theme.colors.surfaceVariant,
+                      borderRadius: 8,
+                      gap: spacing.sm
+                    }}
+                  >
+                    <Text variant="titleMedium" style={{ fontWeight: 'bold' }}>
+                      {event.name}
+                    </Text>
+                    <Text variant="bodyMedium" style={{ opacity: 0.8 }}>
+                      {event.description}
+                    </Text>
+                    <Text variant="bodySmall" style={{ opacity: 0.6 }}>
+                      Event ID: {event.id}
+                    </Text>
+                    
+                    {isAlreadyMember ? (
+                      <Button
+                        mode="outlined"
+                        disabled
+                        style={{ marginTop: spacing.sm }}
+                      >
+                        Already a member
+                      </Button>
+                    ) : (
+                      <Button
+                        mode="contained"
+                        onPress={() => handleJoinEvent(event.id)}
+                        loading={joiningEvent === event.id}
+                        disabled={!userPublicKey || joiningEvent === event.id}
+                        style={{ marginTop: spacing.sm }}
+                      >
+                        Join Event
+                      </Button>
+                    )}
+                  </AppView>
+                )
+              })
+            )}
+          </AppView>
+        )}
+
+        {/* Error Message */}
+        {formError && (
+          <Text style={{ color: 'red', textAlign: 'center', marginBottom: spacing.md }}>
+            {formError}
+          </Text>
+        )}
+
         {/* Event Tiles */}
         <AppView style={{ gap: spacing.md }}>
           {loading ? (
