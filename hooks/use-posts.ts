@@ -6,6 +6,7 @@ export interface Post {
   id: string
   image: string
   caption: string
+  poster: string
 }
 
 export function usePosts(eventId: string) {
@@ -28,7 +29,8 @@ export function usePosts(eventId: string) {
       const postsData: Post[] = postsSnapshot.docs.map((doc: any) => ({
         id: doc.id,
         image: doc.data().img || '',
-        caption: doc.data().caption || ''
+        caption: doc.data().caption || '',
+        poster: doc.data().poster || ''
       }))
       
       setPosts(postsData)

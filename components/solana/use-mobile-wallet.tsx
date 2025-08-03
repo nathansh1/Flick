@@ -1,5 +1,5 @@
-import { transact } from '@solana-mobile/mobile-wallet-adapter-protocol-web3js'
 import { SignInPayload } from '@solana-mobile/mobile-wallet-adapter-protocol'
+import { transact } from '@solana-mobile/mobile-wallet-adapter-protocol-web3js'
 import { Transaction, TransactionSignature, VersionedTransaction } from '@solana/web3.js'
 import { useCallback, useMemo } from 'react'
 import { Account, useAuthorization } from './use-authorization'
@@ -28,12 +28,23 @@ export function useMobileWallet() {
 
   const signAndSendTransaction = useCallback(
     async (transaction: Transaction | VersionedTransaction, minContextSlot: number): Promise<TransactionSignature> => {
+      console.log('Mobile wallet: Starting transaction signing', {
+        transactionType: transaction.constructor.name,
+        minContextSlot,
+        transactionSize: transaction.serialize().length,
+      })
+      
       return await transact(async (wallet) => {
+        console.log('Mobile wallet: Authorizing session...')
         await authorizeSession(wallet)
+        console.log('Mobile wallet: Session authorized, signing transaction...')
+        
         const signatures = await wallet.signAndSendTransactions({
           transactions: [transaction],
           minContextSlot,
         })
+        
+        console.log('Mobile wallet: Transaction signed successfully', signatures[0])
         return signatures[0]
       })
     },

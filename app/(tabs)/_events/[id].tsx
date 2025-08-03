@@ -2,6 +2,7 @@ import { db } from '@/app/config/firebase'
 import { IMGBB_API_KEY, IMGBB_UPLOAD_URL } from '@/app/config/imgbb'
 import { AppPage } from '@/components/app-page'
 import { useAppTheme } from '@/components/app-theme'
+import { useWalletUi } from '@/components/solana/use-wallet-ui'
 import { useEvent } from '@/hooks/use-event'
 import { usePosts } from '@/hooks/use-posts'
 import { addDoc, collection } from '@react-native-firebase/firestore'
@@ -65,6 +66,7 @@ export default function EventDetailScreen() {
   const { theme, spacing } = useAppTheme()
   const { event, loading: eventLoading, error: eventError } = useEvent(id)
   const { posts, loading: postsLoading, error: postsError, refetch } = usePosts(id)
+  const { account } = useWalletUi()
 
 
   const [uploadModalVisible, setUploadModalVisible] = React.useState(false)
@@ -89,6 +91,11 @@ export default function EventDetailScreen() {
   const handleUpload = async () => {
     if (!selectedImage) {
       setUploadError('Please select an image')
+      return
+    }
+
+    if (!account) {
+      setUploadError('Please connect your wallet')
       return
     }
 
@@ -126,13 +133,13 @@ export default function EventDetailScreen() {
       if (imgbbResponse.data.success) {
         const imageUrl = imgbbResponse.data.data.url
         
-        // Add post to Firestore
         const newPost = {
-          image: imageUrl,
-          caption: caption.trim()
+          img: imageUrl,
+          caption: caption.trim(),
+          poster: account.publicKey.toString()
         }
 
-        await addDoc(collection(db, 'events', id, 'posts'), newPost)
+        await addDoc(collection(db, 'events', id, 'post'), newPost)
         
         // Reset form
         setSelectedImage(null)

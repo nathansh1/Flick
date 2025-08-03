@@ -1,5 +1,6 @@
 import { AppPage } from '@/components/app-page'
 import { useAppTheme } from '@/components/app-theme'
+import { TippingModal } from '@/components/tipping/tipping-modal'
 import { SolanaIcon } from '@/components/ui/solana-icon'
 import { useEvent } from '@/hooks/use-event'
 import { usePosts } from '@/hooks/use-posts'
@@ -18,11 +19,15 @@ export default function PostDetailScreen() {
   const { theme, spacing } = useAppTheme()
   const [isLiked, setIsLiked] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
+  const [isTippingModalVisible, setIsTippingModalVisible] = useState(false)
   const [permissionResponse, requestPermission] = usePermissions()
   console.log('Media Library:', usePermissions)
   
   const id = params?.id as string
   const postId = params?.postId as string
+
+  const { event, loading: eventLoading, error: eventError } = useEvent(id)
+  const { posts: rawPosts, loading: postsLoading, error: postsError } = usePosts(id)
 
   if (!id || !postId) {
     return (
@@ -33,9 +38,6 @@ export default function PostDetailScreen() {
       </AppPage>
     )
   }
-
-  const { event, loading: eventLoading, error: eventError } = useEvent(id)
-  const { posts: rawPosts, loading: postsLoading, error: postsError } = usePosts(id)
 
   const posts = rawPosts.map(post => ({
     ...post,
@@ -193,11 +195,19 @@ export default function PostDetailScreen() {
             icon={() => <SolanaIcon size={28} />}
             size={28}
             onPress={() => {
-              console.log('Tip pressed')
+              setIsTippingModalVisible(true)
             }}
           />
         </View>
       </View>
+
+      {/* Tipping Modal */}
+      <TippingModal
+        visible={isTippingModalVisible}
+        onDismiss={() => setIsTippingModalVisible(false)}
+        posterPublicKey={post.poster}
+        postCaption={post.caption}
+      />
     </View>
   )
 } 

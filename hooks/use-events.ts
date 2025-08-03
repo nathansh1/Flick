@@ -32,9 +32,9 @@ export function useEvents(userPublicKey?: string) {
       }))
       
       if (userPublicKey) {
-        const normalizedUserKey = normalizePublicKey(userPublicKey)
-        console.log('Filtering events for user:', normalizedUserKey)
+        console.log('Filtering events for user:', userPublicKey)
         
+        const normalizedUserKey = normalizePublicKey(userPublicKey)
         eventsData = eventsData.filter(event => {
           const isMember = event.members.some(member => {
             const normalizedMember = normalizePublicKey(member)
