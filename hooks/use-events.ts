@@ -9,7 +9,11 @@ export interface Event {
   members: string[]
 }
 
-export function useEvents() {
+function normalizePublicKey(key: string): string {
+  return key.toLowerCase().trim()
+}
+
+export function useEvents(userPublicKey?: string) {
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -20,12 +24,27 @@ export function useEvents() {
       const eventsCollection = collection(db, 'events')
       const eventsSnapshot = await getDocs(eventsCollection)
       
-      const eventsData: Event[] = eventsSnapshot.docs.map((doc: any) => ({
+      let eventsData: Event[] = eventsSnapshot.docs.map((doc: any) => ({
         id: doc.id,
         name: doc.data().name || '',
         description: doc.data().description || '',
         members: doc.data().members || []
       }))
+      
+      if (userPublicKey) {
+        const normalizedUserKey = normalizePublicKey(userPublicKey)
+        console.log('Filtering events for user:', normalizedUserKey)
+        
+        eventsData = eventsData.filter(event => {
+          const isMember = event.members.some(member => {
+            const normalizedMember = normalizePublicKey(member)
+            return normalizedMember === normalizedUserKey
+          })
+          return isMember
+        })
+        
+        console.log(`Found ${eventsData.length} events for user`)
+      }
       
       setEvents(eventsData)
       setError(null)
@@ -39,7 +58,7 @@ export function useEvents() {
 
   useEffect(() => {
     fetchEvents()
-  }, [])
+  }, [userPublicKey])
 
   return { events, loading, error, refetch: fetchEvents }
 } 

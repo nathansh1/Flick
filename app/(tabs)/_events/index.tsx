@@ -2,6 +2,7 @@ import { db } from '@/app/config/firebase'
 import { AppPage } from '@/components/app-page'
 import { useAppTheme } from '@/components/app-theme'
 import { AppView } from '@/components/app-view'
+import { useAuthorization } from '@/components/solana/use-authorization'
 import { useEvents } from '@/hooks/use-events'
 import { addDoc, collection } from '@react-native-firebase/firestore'
 import { useRouter } from 'expo-router'
@@ -11,8 +12,12 @@ import { ActivityIndicator, Button, Modal, Portal, Text, TextInput } from 'react
 export default function EventsScreen() {
   const router = useRouter()
   const { spacing, theme } = useAppTheme()
+  const { selectedAccount } = useAuthorization()
   const [eventCode, setEventCode] = React.useState('')
-  const { events, loading, error, refetch } = useEvents()
+  
+  // Get user's public key as string for filtering
+  const userPublicKey = selectedAccount?.publicKey.toString()
+  const { events, loading, error, refetch } = useEvents(userPublicKey)
   
   // Create Event Modal State
   const [createModalVisible, setCreateModalVisible] = React.useState(false)
@@ -34,7 +39,7 @@ export default function EventsScreen() {
       const newEvent = {
         name: eventName.trim(),
         description: eventDescription.trim(),
-        members: [] // Start with empty members array
+        members: userPublicKey ? [userPublicKey] : [] 
       }
 
       const docRef = await addDoc(collection(db, 'events'), newEvent)
@@ -97,7 +102,14 @@ export default function EventsScreen() {
             </AppView>
           ) : events.length === 0 ? (
             <AppView style={{ alignItems: 'center', padding: spacing.lg }}>
-              <Text>No events found</Text>
+              <Text style={{ textAlign: 'center', marginBottom: spacing.sm }}>
+                {userPublicKey ? 'No events found that you are a member of' : 'Connect your wallet to see your events'}
+              </Text>
+              {!userPublicKey && (
+                <Text style={{ textAlign: 'center', fontSize: 12, opacity: 0.7 }}>
+                  You need to connect your wallet to view events you're a member of
+                </Text>
+              )}
             </AppView>
           ) : (
             events.map((event) => (
