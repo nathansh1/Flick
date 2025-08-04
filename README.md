@@ -1,25 +1,21 @@
-# Flick
+# Flick 📸
 
-This is an [Expo](https://expo.dev) project created with [
-`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A photo-sharing app for real-world events with Solana blockchain integration. Share moments, connect with event attendees, and tip creators with SOL.
 
-## Get started
+## Features
 
-1. Install dependencies
+- **Event Management**: Create and join events with unique codes
+- **Photo Sharing**: Upload and share photos within event communities
+- **Solana Integration**: Connect your Solana wallet and tip content creators
+- **Real-time Updates**: Live feed of photos and posts from event attendees
+- **Mobile-First**: Built with React Native for seamless mobile experience
 
-   ```bash
-   npm install
-   ```
+## Tech Stack
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- **Frontend**: React Native with Expo
+- **Navigation**: Expo Router
+- **UI**: React Native Paper
+- **Blockchain**: Solana Web3.js with Mobile Wallet Adapter
+- **Backend**: Firebase (Firestore, Storage)
+- **Authentication**: Solana wallet-based authentication
+- **Image Handling**: Expo Image Picker with ImgBB integration
