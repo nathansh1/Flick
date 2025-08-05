@@ -1,9 +1,8 @@
 import { AppView } from '@/components/app-view'
 import { useAuth } from '@/components/auth/auth-provider'
-import { Button } from '@react-navigation/elements'
 import { Image } from 'expo-image'
 import { router } from 'expo-router'
-import { ActivityIndicator, View } from 'react-native'
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function SignIn() {
@@ -14,6 +13,7 @@ export default function SignIn() {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'stretch',
+        backgroundColor: '#000000',
       }}
     >
       {isLoading ? (
@@ -27,9 +27,18 @@ export default function SignIn() {
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <View style={{ alignItems: 'center', gap: 100 }}>
               <Image source={require('../assets/images/flick-logo-no-bg.png')} style={{ width: 378, height: 130 }} />
-              <Button
-                variant="filled"
-                style={{ marginHorizontal: 16 }}
+              <TouchableOpacity
+                style={{ 
+                  marginHorizontal: 16,
+                  paddingVertical: 16,
+                  paddingHorizontal: 32,
+                  minWidth: 200,
+                  minHeight: 56,
+                  backgroundColor: '#8B5CF6',
+                  borderRadius: 8,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
                 onPress={async () => {
                   try {
                     console.log('Signing in...')
@@ -43,8 +52,14 @@ export default function SignIn() {
                   }
                 }}
               >
-                Connect
-              </Button>
+                <Text style={{
+                  fontSize: 22,
+                  fontWeight: 'bold',
+                  color: '#FFFFFF',
+                }}>
+                  Connect
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         </SafeAreaView>

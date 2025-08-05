@@ -9,6 +9,7 @@ import { addDoc, collection } from '@react-native-firebase/firestore'
 import axios from 'axios'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
+import { LinearGradient } from 'expo-linear-gradient'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import React from 'react'
 import { Alert, ScrollView, TouchableOpacity, View } from 'react-native'
@@ -27,7 +28,7 @@ const CollapsibleDescription = ({ description, maxLines = 1 }: { description: st
       <Text
         variant="bodyLarge"
         style={{ 
-          color: theme.colors.onPrimary, 
+          color: '#FFFFFF', 
           marginTop: 8,
           lineHeight: 20,
         }}
@@ -47,9 +48,9 @@ const CollapsibleDescription = ({ description, maxLines = 1 }: { description: st
         >
           <Text
             style={{
-              color: theme.colors.onPrimary,
+              color: '#FFFFFF',
               textDecorationLine: 'underline',
-              fontSize: 14,
+              fontSize: 12,
             }}
           >
             {expanded ? 'Show less' : 'Show more'}
@@ -199,35 +200,39 @@ export default function EventDetailScreen() {
   return (
     <AppPage style={{ paddingHorizontal: 0 }}>
       <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 0 }}>
-        {/* Full-width header */}
-        <View
-          style={{
-            backgroundColor: theme.colors.primary,
-            paddingVertical: 24,
-            alignItems: 'flex-start',
-            paddingLeft: 24,
-            borderBottomWidth: 6,
-            borderBottomColor: theme.colors.outline,
-            width: '100%',
-          }}
+        <LinearGradient
+          colors={['#000000', '#1a1a2e', '#16213e']}
+          style={{ flex: 1 }}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
         >
-          <Text variant="headlineLarge" style={{ color: theme.colors.onPrimary, marginTop: 24 }}>
-            {event.name}
-          </Text>
-          <CollapsibleDescription description={event.description} />
-        </View>
-        {/* Event info below header, with horizontal padding */}
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            paddingHorizontal: 16,
-            marginTop: 32,
-          }}
-        >
+          {/* Full-width header */}
+          <View
+            style={{
+              paddingVertical: 24,
+              alignItems: 'flex-start',
+              paddingLeft: 24,
+              width: '100%',
+            }}
+          >
+            <Text variant="headlineLarge" style={{ color: '#FFFFFF', marginTop: 24 }}>
+              {event.name}
+            </Text>
+            <CollapsibleDescription description={event.description} />
+          </View>
+          {/* Event info below header, with horizontal padding */}
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              marginTop: 32,
+            }}
+          >
           <IconButton
             icon="plus"
+            iconColor="#FFFFFF"
             mode="contained"
             containerColor="#4CAF50"
             onPress={openUploadModal}
@@ -238,8 +243,8 @@ export default function EventDetailScreen() {
           <IconButton
             icon="qrcode"
             mode="contained"
-            containerColor={theme.colors.primary}
-            iconColor={theme.colors.onPrimary}
+            containerColor="#808080"
+            iconColor="#FFFFFF"
             onPress={() => {
               Alert.alert(
                 'Event Code (case sensitive)',
@@ -257,21 +262,20 @@ export default function EventDetailScreen() {
             flexWrap: 'wrap',
             width: '100%',
             marginTop: 16,
-            backgroundColor: theme.colors.background,
           }}
         >
           {postsLoading ? (
             <View style={{ width: '100%', padding: spacing.lg, alignItems: 'center' }}>
               <ActivityIndicator size="large" />
-              <Text style={{ marginTop: spacing.sm }}>Loading posts...</Text>
+              <Text style={{ marginTop: spacing.sm, color: '#FFFFFF' }}>Loading posts...</Text>
             </View>
           ) : postsError ? (
             <View style={{ width: '100%', padding: spacing.lg, alignItems: 'center' }}>
-              <Text style={{ color: 'red' }}>{postsError}</Text>
+              <Text style={{ color: '#FFFFFF' }}>{postsError}</Text>
             </View>
           ) : posts.length === 0 ? (
             <View style={{ width: '100%', padding: spacing.lg, alignItems: 'center' }}>
-              <Text>No posts yet</Text>
+              <Text style={{ color: '#FFFFFF' }}>No posts yet</Text>
             </View>
           ) : (
             posts.map((post, idx) => {
@@ -285,8 +289,7 @@ export default function EventDetailScreen() {
                     aspectRatio: 3 / 4,
                     borderRightWidth: isLastCol ? 0 : 1,
                     borderBottomWidth: isLastRow ? 0 : 1,
-                    borderColor: theme.colors.background,
-                    backgroundColor: '#111',
+                    borderColor: '#000000',
                   }}
                   onPress={() => router.push({
                     pathname: '/(tabs)/_events/[id]/[postId]',
@@ -305,6 +308,7 @@ export default function EventDetailScreen() {
             })
           )}
         </View>
+        </LinearGradient>
       </ScrollView>
 
       {/* Upload Post Modal */}

@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
-import { Linking } from 'react-native'
-import Clipboard from '@react-native-clipboard/clipboard'
+import { useCluster } from '@/components/cluster/cluster-provider'
 import { useWalletUi } from '@/components/solana/use-wallet-ui'
 import { ellipsify } from '@/utils/ellipsify'
-import { useCluster } from '@/components/cluster/cluster-provider'
+import Clipboard from '@react-native-clipboard/clipboard'
+import React, { useState } from 'react'
+import { Linking } from 'react-native'
 import { Button, ButtonProps, Menu } from 'react-native-paper'
 
 function BaseButton({

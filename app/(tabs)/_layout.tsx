@@ -1,15 +1,23 @@
+import { useAppTheme } from '@/components/app-theme';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Tabs } from 'expo-router';
 import React from 'react';
 
 export default function TabLayout() {
+  const { theme } = useAppTheme();
+  
   return (
     <Tabs 
       screenOptions={{ 
         headerShown: false,
         tabBarShowLabel: true,
-        tabBarActiveTintColor: '#007AFF',
+        tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: '#8E8E93',
+        tabBarStyle: {
+          backgroundColor: '#000000',
+          borderTopColor: '#1A1A1A',
+        },
+        tabBarBackground: () => null,
       }}
     >
       {/* The index redirects to the events screen */}

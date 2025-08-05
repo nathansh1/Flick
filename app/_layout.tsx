@@ -1,14 +1,14 @@
-import { useFonts } from 'expo-font'
-import { Stack } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
-import 'react-native-reanimated'
 import { AppProviders } from '@/components/app-providers'
-import { useCallback } from 'react'
-import * as SplashScreen from 'expo-splash-screen'
-import { View } from 'react-native'
-import { useTrackLocations } from '@/hooks/use-track-locations'
 import { AppSplashController } from '@/components/app-splash-controller'
 import { useAuth } from '@/components/auth/auth-provider'
+import { useTrackLocations } from '@/hooks/use-track-locations'
+import { useFonts } from 'expo-font'
+import { Stack } from 'expo-router'
+import * as SplashScreen from 'expo-splash-screen'
+import { StatusBar } from 'expo-status-bar'
+import { useCallback } from 'react'
+import { View } from 'react-native'
+import 'react-native-reanimated'
 
 SplashScreen.preventAutoHideAsync()
 
@@ -41,11 +41,11 @@ export default function RootLayout() {
   }
 
   return (
-    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+    <View style={{ flex: 1, backgroundColor: '#000000' }} onLayout={onLayoutRootView}>
       <AppProviders>
         <AppSplashController />
         <RootNavigator />
-        <StatusBar style="auto" />
+        <StatusBar style="light" />
       </AppProviders>
     </View>
   )
