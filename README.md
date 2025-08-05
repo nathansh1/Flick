@@ -16,6 +16,6 @@ A photo-sharing app for real-world events with Solana blockchain integration. Sh
 - **Navigation**: Expo Router
 - **UI**: React Native Paper
 - **Blockchain**: Solana Web3.js with Mobile Wallet Adapter
-- **Backend**: Firebase (Firestore, Storage)
+- **Backend**: Firebase, ImgBB
 - **Authentication**: Solana wallet-based authentication
 - **Image Handling**: Expo Image Picker with ImgBB integration
