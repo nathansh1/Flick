@@ -211,7 +211,7 @@ export default function EventsScreen() {
           ) : events.length === 0 ? (
             <AppView style={{ alignItems: 'center', padding: spacing.lg }}>
               <Text style={{ textAlign: 'center', marginBottom: spacing.sm }}>
-                {userPublicKey ? 'No events found that you are a member of' : 'Connect your wallet to see your events'}
+                {userPublicKey ? 'Join some events!' : 'Connect your wallet to see your events'}
               </Text>
               {!userPublicKey && (
                 <Text style={{ textAlign: 'center', fontSize: 12, opacity: 0.7 }}>
