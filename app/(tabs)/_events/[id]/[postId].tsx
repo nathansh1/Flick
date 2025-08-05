@@ -21,7 +21,6 @@ export default function PostDetailScreen() {
   const [isDownloading, setIsDownloading] = useState(false)
   const [isTippingModalVisible, setIsTippingModalVisible] = useState(false)
   const [permissionResponse, requestPermission] = usePermissions()
-  console.log('Media Library:', usePermissions)
   
   const id = params?.id as string
   const postId = params?.postId as string

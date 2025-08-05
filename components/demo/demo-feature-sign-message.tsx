@@ -46,11 +46,9 @@ export function DemoFeatureSignMessage({ address }: { address: PublicKey }) {
               signMessage
                 .mutateAsync({ message })
                 .then(() => {
-                  console.log(`Signed message: ${message} with ${address.toString()}`)
-
                   setShowSnackbar(true)
                 })
-                .catch((err) => console.log(`Error signing message: ${err}`, err))
+                .catch((err) => console.error(`Error signing message: ${err}`, err))
             }}
             mode="contained-tonal"
           >

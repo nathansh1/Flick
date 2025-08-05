@@ -41,14 +41,11 @@ export default function SignIn() {
                 }}
                 onPress={async () => {
                   try {
-                    console.log('Signing in...')
                     const account = await signIn();
-                    console.log('Sign in successful');
-                    // Navigate after signing in
                     router.replace('/');
                   } catch (error) {
-                    console.log(`Sign in failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-                    alert(`Sign in failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                    // Error handling - could be improved with a proper toast or modal
+                    // For now, silently fail and let the user try again
                   }
                 }}
               >

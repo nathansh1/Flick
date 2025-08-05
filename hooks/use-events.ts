@@ -32,7 +32,6 @@ export function useEvents(userPublicKey?: string) {
       }))
       
       if (userPublicKey) {
-        console.log('Filtering events for user:', userPublicKey)
         
         const normalizedUserKey = normalizePublicKey(userPublicKey)
         eventsData = eventsData.filter(event => {
@@ -42,8 +41,6 @@ export function useEvents(userPublicKey?: string) {
           })
           return isMember
         })
-        
-        console.log(`Found ${eventsData.length} events for user`)
       }
       
       setEvents(eventsData)
