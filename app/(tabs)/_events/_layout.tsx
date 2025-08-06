@@ -9,7 +9,7 @@ export default function Layout() {
       screenOptions={{
         headerTitle: 'Events',
         headerTitleStyle: { fontSize: 50 },
-        headerStyle: { backgroundColor: theme.colors.background },
+        headerStyle: { backgroundColor: '#000000' },
         headerShadowVisible: false,
       }}
     >
