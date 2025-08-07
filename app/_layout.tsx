@@ -8,7 +8,6 @@ import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
 import { useCallback } from 'react'
 import { View } from 'react-native'
-import 'react-native-reanimated'
 
 SplashScreen.preventAutoHideAsync()
 
